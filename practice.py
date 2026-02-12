@@ -22,8 +22,8 @@
 # print (firstname.lower())
 
 # STRING INDEX METHODS
-print(firstname[0])
-print(firstname[5])
-print(firstname[-1])
-print(firstname[0:5])
-print(firstname[0:])
+# print(firstname[0])
+# print(firstname[5])
+# print(firstname[-1])
+# print(firstname[0:5])
+# print(firstname[0:])
