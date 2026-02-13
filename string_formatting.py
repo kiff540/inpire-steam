@@ -38,11 +38,10 @@ new = int(cleaned_balance) + int(cleaned_amount_added)
 print(f"the new balance is : new" ,new )
 
 # Mpesa message
-amount = "40 kes"
+amount = "Ksh40"
 first = "CONFIRMED"
 third = " you have received"
 fourth = "from Bob.New Mpesa balance is 50 kes"
 
-
-mpesa = first + " " + capitalized + " " + third + " " + amount +" " + fourth
-print(mpesa)
+mpesa = capitalized + " " + first + " " + third + " " + amount  +" " + fourth
+print(mpesa) 
