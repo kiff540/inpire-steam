@@ -18,3 +18,21 @@ rows = 5
 for i in range(1, rows + 1):
     # Print spaces first, then stars
     print(" " * (rows - i) + "*" * (2 * i - 1))
+
+#QUADRATIC EQUATIONS
+
+# Coefficients for ax^2 + bx + c = 0
+import math
+a = float(input("Enter a: "))
+b = float(input("Enter b: "))
+c = float(input("Enter c: "))
+
+# Calculate the discriminant
+d = (b**2) - (4*a*c)
+
+# Calculate the two solutions
+sol1 = (-b - math.sqrt(d)) / (2*a)
+sol2 = (-b + math.sqrt(d)) / (2*a)
+
+print(f"The solutions are {sol1} and {sol2}")
+
