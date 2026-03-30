@@ -1,85 +1,205 @@
 import tkinter as tk
-from tkinter import ttk
-from tkinter import messagebox
+from tkinter import ttk, messagebox, filedialog
 
-# --- Functions ---
-def enroll_student():
-    """Fetches data from entry fields and adds it to the display table."""
-    s_num = entry_num.get()
-    s_name = entry_name.get()
-    c_id = entry_course.get()
-    
-    # Basic validation to ensure fields aren't empty
-    if not s_num or not s_name or not c_id:
-        messagebox.showwarning("Input Error", "Please fill in all fields before enrolling.")
+
+class SchoolManagementSystem:
+    def __init__(self, root):
+        self.root = root
+        self.root.title("School Management System")
+        self.root.geometry("1000x600")
+        self.root.configure(bg="#f4f6f7")
+
+        self.students = []
+
+        # ===== TITLE =====
+        title = tk.Label(root,
+                         text="SCHOOL MANAGEMENT SYSTEM",
+                         font=("Arial", 20, "bold"),
+                         bg="#1f618d",
+                         fg="white")
+        title.pack(fill="x")
+
+        # ===== INPUT FRAME =====
+        input_frame = tk.Frame(root, bg="#f4f6f7")
+        input_frame.pack(pady=10)
+
+        tk.Label(input_frame, text="Student ID", bg="#f4f6f7").grid(row=0, column=0)
+        self.id_entry = tk.Entry(input_frame)
+        self.id_entry.grid(row=0, column=1)
+
+        tk.Label(input_frame, text="First Name", bg="#f4f6f7").grid(row=1, column=0)
+        self.first_name_entry = tk.Entry(input_frame)
+        self.first_name_entry.grid(row=1, column=1)
+
+        tk.Label(input_frame, text="Last Name", bg="#f4f6f7").grid(row=2, column=0)
+        self.last_name_entry = tk.Entry(input_frame)
+        self.last_name_entry.grid(row=2, column=1)
+
+        tk.Label(input_frame, text="Course", bg="#f4f6f7").grid(row=3, column=0)
+        self.course_entry = tk.Entry(input_frame)
+        self.course_entry.grid(row=3, column=1)
+
+        tk.Label(input_frame, text="Phone Number", bg="#f4f6f7").grid(row=4, column=0)
+        self.phone_entry = tk.Entry(input_frame)
+        self.phone_entry.grid(row=4, column=1)
+
+        tk.Button(input_frame,
+                  text="Add Student",
+                  command=self.add_student,
+                  bg="green",
+                  fg="white",
+                  width=20).grid(row=5, columnspan=2, pady=10)
+
+        # ===== TABLE =====
+        self.tree = ttk.Treeview(root,
+                                 columns=("ID", "First Name", "Last Name",
+                                          "Course", "Phone"),
+                                 show="headings")
+
+        for col in ("ID", "First Name", "Last Name", "Course", "Phone"):
+            self.tree.heading(col, text=col)
+            self.tree.column(col, width=150)
+
+        self.tree.pack(fill="both", expand=True, padx=20, pady=10)
+
+        # ===== UPDATE COURSE FRAME =====
+        update_frame = tk.Frame(root, bg="#f4f6f7")
+        update_frame.pack(pady=5)
+
+        tk.Label(update_frame, text="New Course", bg="#f4f6f7").grid(row=0, column=0)
+        self.new_course_entry = tk.Entry(update_frame)
+        self.new_course_entry.grid(row=0, column=1)
+
+        tk.Button(update_frame,
+                  text="Assign / Update Course",
+                  command=self.update_course,
+                  bg="blue",
+                  fg="white").grid(row=0, column=2, padx=10)
+
+        # ===== EXPORT BUTTON =====
+        tk.Button(root,
+                  text="Export Students to Text File",
+                  command=self.export_to_text,
+                  bg="orange",
+                  fg="black",
+                  width=30).pack(pady=10)
+
+    # ===== ADD STUDENT =====
+    def add_student(self):
+        student_id = self.id_entry.get()
+        first_name = self.first_name_entry.get()
+        last_name = self.last_name_entry.get()
+        course = self.course_entry.get()
+        phone = self.phone_entry.get()
+
+        if not student_id or not first_name or not last_name or not course or not phone:
+            messagebox.showerror("Error", "All fields are required!")
+            return
+
+        student = {
+            "id": student_id,
+            "first_name": first_name,
+            "last_name": last_name,
+            "course": course,
+            "phone": phone
+        }
+
+        self.students.append(student)
+
+        self.tree.insert("", "end",
+                         values=(student_id, first_name,
+                                 last_name, course, phone))
+
+        self.clear_entries()
+
+    # ===== UPDATE COURSE =====
+    def update_course(self):
+        selected = self.tree.selection()
+
+        if not selected:
+            messagebox.showerror("Error", "Select a student first!")
+            return
+
+        new_course = self.new_course_entry.get()
+
+        if not new_course:
+            messagebox.showerror("Error", "Enter new course!")
+            return
+
+        for item in selected:
+            values = self.tree.item(item, "values")
+            updated_values = (values[0], values[1],
+                              values[2], new_course, values[4])
+            self.tree.item(item, values=updated_values)
+
+        self.new_course_entry.delete(0, tk.END)
+        messagebox.showinfo("Success", "Course Updated Successfully!")
+
+    # ===== EXPORT TO TEXT FILE =====
+    def export_to_text(self):
+        if not self.students:
+            messagebox.showerror("Error", "No students to export!")
+            return
+
+        file_path = filedialog.asksaveasfilename(
+            defaultextension=".txt",
+            filetypes=[("Text Files", "*.txt")]
+        )
+
+        if not file_path:
+            return
+
+        with open(file_path, "w") as file:
+            file.write("===== STUDENT REPORT =====\n\n")
+
+            for student in self.tree.get_children():
+                values = self.tree.item(student, "values")
+                file.write(f"ID: {values[0]}\n")
+                file.write(f"Name: {values[1]} {values[2]}\n")
+                file.write(f"Course: {values[3]}\n")
+                file.write(f"Phone: {values[4]}\n")
+                file.write("--------------------------\n")
+
+        messagebox.showinfo("Success", "Students Exported Successfully!")
+
+    def clear_entries(self):
+        self.id_entry.delete(0, tk.END)
+        self.first_name_entry.delete(0, tk.END)
+        self.last_name_entry.delete(0, tk.END)
+        self.course_entry.delete(0, tk.END)
+        self.phone_entry.delete(0, tk.END)
+
+
+# ===== RUN PROGRAM =====
+if __name__ == "__main__":
+    root = tk.Tk()
+    app = SchoolManagementSystem(root)
+    root.mainloop()
+
+
+   # ===== DELETE STUDENT =====
+def delete_student(self):
+    selected = self.tree.selection()
+
+    if not selected:
+        messagebox.showerror("Error", "Select a student to delete!")
         return
-        
-    # Insert the data into the Treeview (Table)
-    table.insert("", tk.END, values=(s_num, s_name, c_id))
-    
-    # Clear the entry fields after successful enrollment
-    entry_num.delete(0, tk.END)
-    entry_name.delete(0, tk.END)
-    entry_course.delete(0, tk.END)
-    
-    # Optional success message
-    messagebox.showinfo("Success", f"Student {s_name} enrolled successfully!")
 
-# --- Main Window Setup ---
-root = tk.Tk()
-root.title("School Management System - Enrollment")
-root.geometry("550x450")
-root.configure(padx=20, pady=20)
+    confirm = messagebox.askyesno("Confirm Delete",
+                                   "Are you sure you want to delete this student?")
 
-# ==========================================
-# FRAME 1: Data Entry Form
-# ==========================================
-frame_input = tk.Frame(root, relief=tk.GROOVE, borderwidth=2, padx=15, pady=15)
-frame_input.pack(side=tk.TOP, fill=tk.X, pady=(0, 20))
+    if not confirm:
+        return
 
-# Title for the input frame
-tk.Label(frame_input, text="Enroll a New Student", font=("Arial", 14, "bold")).grid(row=0, column=0, columnspan=2, pady=(0, 15))
+    for item in selected:
+        values = self.tree.item(item, "values")
+        student_id = values[0]
 
-# Student Number
-tk.Label(frame_input, text="Student Number:").grid(row=1, column=0, sticky=tk.W, pady=5)
-entry_num = tk.Entry(frame_input, width=30)
-entry_num.grid(row=1, column=1, pady=5, padx=10)
+        # Remove from internal list
+        self.students = [student for student in self.students
+                         if student["id"] != student_id]
 
-# Student Name
-tk.Label(frame_input, text="Student Name:").grid(row=2, column=0, sticky=tk.W, pady=5)
-entry_name = tk.Entry(frame_input, width=30)
-entry_name.grid(row=2, column=1, pady=5, padx=10)
+        # Remove from table
+        self.tree.delete(item)
 
-# Course ID
-tk.Label(frame_input, text="Course ID:").grid(row=3, column=0, sticky=tk.W, pady=5)
-entry_course = tk.Entry(frame_input, width=30)
-entry_course.grid(row=3, column=1, pady=5, padx=10)
-
-# Enroll Button
-btn_enroll = tk.Button(frame_input, text="Enroll Student", bg="#4CAF50", fg="white", font=("Arial", 10, "bold"), command=enroll_student)
-btn_enroll.grid(row=4, column=0, columnspan=2, pady=(15, 0), ipadx=10, ipady=5)
-
-
-# ==========================================
-# FRAME 2: Display Table
-# ==========================================
-frame_display = tk.Frame(root)
-frame_display.pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-
-# Define columns for the Treeview
-columns = ("Student Number", "Student Name", "Course ID")
-table = ttk.Treeview(frame_display, columns=columns, show="headings")
-
-# Define column headings
-for col in columns:
-    table.heading(col, text=col)
-    table.column(col, anchor=tk.CENTER, width=150)
-
-# Add a scrollbar to the table
-scrollbar = ttk.Scrollbar(frame_display, orient=tk.VERTICAL, command=table.yview)
-table.configure(yscroll=scrollbar.set)
-scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-table.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-
-# Run the application
-root.mainloop()
+    messagebox.showinfo("Deleted", "Student deleted successfully!") 
